@@ -7,6 +7,7 @@ import re
 import resource
 import shutil
 import sys
+import subprocess
 from collections import Counter, defaultdict
 
 from lutris import settings
@@ -196,6 +197,9 @@ class LinuxSystem:  # pylint: disable=too-many-public-methods
             return "i386"
         if "armv7" in machine:
             return "armv7"
+        
+        if "aarch64" in machine:
+            return "aarch64"
         logger.warning("Unsupported architecture %s", machine)
 
     @staticmethod
@@ -523,6 +527,15 @@ def gather_system_info_dict():
     system_info_readable["Graphics"] = graphics_dict
     return system_info_readable
 
+
+page_size = 0
+def use_muvm_required():
+    global page_size
+    if page_size == 0:
+        output = subprocess.check_output("getconf PAGESIZE", text=True, shell=True)
+        page_size = int(output)
+
+    return page_size == 16384
 
 def get_terminal_apps():
     """Return the list of installed terminal emulators"""

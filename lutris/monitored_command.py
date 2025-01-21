@@ -16,6 +16,7 @@ from lutris import settings
 from lutris.util import system
 from lutris.util.log import logger
 from lutris.util.shell import get_terminal_script
+from lutris.util.linux import use_muvm_required
 
 
 def get_wrapper_script_location():
@@ -192,8 +193,8 @@ class MonitoredCommand:
 
     def log_handler_stdout(self, line):
         """Add the line to this command's stdout attribute"""
-        if not self.log_filter(line):
-            return
+        #if not self.log_filter(line):
+          #  return
         self._stdout.write(line)
 
     def log_handler_buffer(self, line):
@@ -202,8 +203,8 @@ class MonitoredCommand:
 
     def log_handler_console_output(self, line):
         """Print the line to stdout"""
-        if not self.log_filter(line):
-            return
+        #if not self.log_filter(line):
+         #   return
         with contextlib.suppress(BlockingIOError):
             sys.stdout.write(line)
             sys.stdout.flush()
@@ -261,6 +262,13 @@ class MonitoredCommand:
                 logger.error("Failed to create working directory, falling back to %s", self.fallback_cwd)
                 self.cwd = "/tmp"
         try:
+            if use_muvm_required() and not command[1].startswith("/usr/bin/muvm"):
+                command.insert(1, " -- ")
+                command.insert(1, "/usr/bin/muvm")
+
+            logger.debug(" ".join(command))
+            logger.debug(command)
+            
             return subprocess.Popen(  # pylint: disable=consider-using-with
                 command,
                 stdout=subprocess.PIPE,

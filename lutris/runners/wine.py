@@ -37,7 +37,7 @@ from lutris.runners.runner import Runner
 from lutris.util import system
 from lutris.util.display import DISPLAY_MANAGER, get_default_dpi
 from lutris.util.graphics import drivers, vkquery
-from lutris.util.linux import LINUX_SYSTEM
+from lutris.util.linux import LINUX_SYSTEM, use_muvm_required
 from lutris.util.log import logger
 from lutris.util.process import Process
 from lutris.util.strings import split_arguments
@@ -1267,7 +1267,10 @@ class wine(Runner):
                 raise FsyncUnsupportedError()
 
         command = self.get_command()
+        if use_muvm_required():
+            command = "/usr/bin/muvm --" + self.get_command()
 
+        logger.debug('running', command)
         game_exe, args, _working_dir = get_real_executable(game_exe, self.working_dir)
         command.append(game_exe)
         if args:

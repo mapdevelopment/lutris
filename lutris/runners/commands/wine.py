@@ -4,7 +4,7 @@
 import os
 import shlex
 import time
-
+from lutris.util.linux import use_muvm_required
 from lutris import runtime, settings
 from lutris.monitored_command import MonitoredCommand
 from lutris.runners import import_runner
@@ -147,8 +147,16 @@ def create_prefix(
         wineenv["PROTON_VERB"] = "run"
 
         proton.update_proton_env(wine_path, wineenv)
+        print(wineenv)
+        args = [proton.get_umu_path(), "createprefix"]
+        if use_muvm_required():
+            args_line = ""
+            for key, value in wineenv.items():
+                args_line+=f'-e={key}="{value}" '
 
-        command = MonitoredCommand([proton.get_umu_path(), "createprefix"], env=wineenv)
+            args = ["/usr/bin/muvm", f'{args_line}--',proton.get_umu_path(), "createprefix"]
+            
+        command = MonitoredCommand(args, env=wineenv)
         command.start()
     else:
         wineboot_path = os.path.join(os.path.dirname(wine_path), "wineboot")

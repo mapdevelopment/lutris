@@ -20,6 +20,7 @@ from lutris.runners.wine import wine
 from lutris.util import extract, linux, selective_merge, system
 from lutris.util.fileio import EvilConfigParser, MultiOrderedDict
 from lutris.util.jobs import schedule_repeating_at_idle
+from lutris.util.linux import use_muvm_required
 from lutris.util.log import logger
 from lutris.util.wine.wine import WINE_DEFAULT_ARCH, get_default_wine_version, get_wine_path_for_version
 
@@ -412,7 +413,11 @@ class CommandsMixin:
             return_code = "0"
 
         if runner_name.startswith("wine"):
-            data["wine_path"] = self.get_wine_path()
+            if use_muvm_required():
+                data["wine_path"] = self.get_wine_path()
+            else:
+                data["wine_path"] = self.get_wine_path()
+
             data["prefix"] = data.get("prefix") or self.installer.script.get("game", {}).get("prefix") or "$GAMEDIR"
             data["arch"] = data.get("arch") or self.installer.script.get("game", {}).get("arch") or WINE_DEFAULT_ARCH
             if task_name == "wineexec":
@@ -432,6 +437,7 @@ class CommandsMixin:
 
         task = import_task(runner_name, task_name)
         command = task(**data)
+        print(command)
         if isinstance(command, MonitoredCommand):
             # Monitor thread and continue when task has executed
             self.interpreter_ui_delegate.attach_log(command)

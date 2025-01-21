@@ -2,6 +2,7 @@
 
 # Standard Library
 import os
+from lutris.util.linux import use_muvm_required
 import sys
 
 # Lutris Modules
@@ -12,7 +13,10 @@ def get():
     """Return the path for the resources."""
     launch_path = os.path.realpath(sys.path[0])
     if launch_path.startswith("/usr/local"):
-        data_path = "/usr/local/share/lutris"
+        if use_muvm_required():
+            data_path = "/usr/share/lutris"
+        else:
+            data_path = "/usr/local/share/lutris"
     elif launch_path.startswith("/usr"):
         data_path = "/usr/share/lutris"
     elif system.path_exists(os.path.normpath(os.path.join(sys.path[0], "share"))):
